@@ -150,21 +150,21 @@ function draw() {
 
     // determine if the new superbase must be added
     if (current.oftype === "river") {
-      if (n * current.prod() < 0) {
-        tryadd = true;
+      if (n * current.prod() > 0) {
+        if (n * current.vals[_i] < 0){
+          tryadd = true;
+        }
       } else {
-          if (n * current.vals[_i] >= 0) {
             tryadd = true;
-          }
         }
       } else if (current.oftype === "lakeside") {
-        if (n * current.vals[_i] >= 0) {
+        if (n * current.vals[_i] <= 0) {
           if (Math.abs(new_val) < Math.abs(n)) {
             tryadd = true;
           }
         }
       } else {
-        if (Math.abs(new_val) < Math.abs(n) && n * new_val > 0) {
+        if (Math.abs(new_val) < Math.abs(n)) {
           tryadd = true
         }
     }

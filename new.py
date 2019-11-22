@@ -1,6 +1,7 @@
 import numpy as np
 from pprint import pformat
 from warnings import warn
+import math
 
 
 a = 3
@@ -61,9 +62,13 @@ class SuperBase(object):
 
     def check(self, n):
         for v in self.vals:
-            if v[0] == n:
-                print(f"{n} FOUND AT POINT {v[1]}")
-                print(f"f({v[1]}) == {f(*v[1])}")
+            frac = max(n / v[0], v[0] / n, key=lambda x: abs(x))
+            if frac < 0:
+                return False
+            if int(math.sqrt(frac))**2 * v[0] == n:
+                coords = math.sqrt(frac)*v[1] if n <= v[0] else v[1] / math.sqrt(frac)
+                print(f"{n} FOUND AT POINT {frac*v[1]}")  # todo: of / frac
+                print(f"f({coords}) == {f(*coords)}")
                 quit()
         return False
 
@@ -96,7 +101,7 @@ class SuperBase(object):
         return new_val, nxt
 
 
-n = 120  # int(input("n: "))
+n = 4 * 73  # int(input("n: "))
 
 start = SuperBase([
     (f(*point), np.array(point, dtype=int)) for point in ((1, 0), (0, 1), (1, 1))
@@ -115,28 +120,29 @@ to_explore_from = {start}
 
 while to_explore_from:
     current = to_explore_from.pop()
-    print(current.vals)
+    #print(current.vals, current.oftype)
     for v in current.vals:
         tryadd = False
         new_value, new = current.move_away(v)  # don't check new value, along the river anything might happen
         if current.oftype == "river":
-            if n * current.prod() < 0:
-                tryadd = True
+            if n * current.prod() > 0:
+                if n * v[0] < 0:
+                    tryadd = True
 
             else:
-                if n * v[0] >= 0:
-                    tryadd = True
+                tryadd = True
 
         elif current.oftype == "lakeside":
             # if n == 0 we have already found it, so we don't have to worry about this case
-            if n * v[0] >= 0:
+            if n * v[0] <= 0:
                 if abs(new_value) < abs(n):  # values only get larger absolutely
                     tryadd = True
 
         else:  # well or normal, move away from all points, the one we came from will not be explored
-            if abs(new_value) < abs(n) and n * new_value > 0:  # values only get larger absolutely
+            if abs(new_value) < abs(n):  # values only get larger absolutely
                 tryadd = True
 
+        # print(new_value, tryadd)
         if tryadd:
             if new not in found:
                 to_explore_from.add(new)

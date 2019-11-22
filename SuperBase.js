@@ -55,16 +55,27 @@ class SuperBase {
 
     check() {
         // find if we have a solution
-        if (this.vals.includes(n)) {
-            console.log(n + " FOUND");
-            for (let i = 0; i < 3; i++) {
-                if (this.vals[i] === n) {
-                    alert("f(" + this.points[i].x.toString() + "," + this.points[i].y.toString() + ") = " + n);
-                    console.log("f(" + this.points[i].x.toString() + "," + this.points[i].y.toString() + ") = " + n);
-                    console.log(f(this.points[i].x, this.points[i].y))
-                }
+        console.log(n + " FOUND");
+        for (let i = 0; i < 3; i++) {
+            let frac;
+            let x, y;
+            if (n >= this.vals[i]) {
+                frac = n / this.vals[i];
+                x = this.points[i].x * Math.sqrt(frac);
+                y = this.points[i].y * Math.sqrt(frac);
+            } else {
+                frac = this.vals[i] / n;
+                x = this.points[i].x / Math.sqrt(frac);
+                y = this.points[i].y / Math.sqrt(frac);
             }
-            done = true;
+            console.log(frac);
+            if (Math.round(Math.sqrt(frac))**2 == frac) {
+                done = true;
+                alert("f(" + x.toString() + "," + y.toString() + ") = " + n);
+                console.log("f(" + x.toString() + "," + y.toString() + ") = " + n);
+                console.log(f(x,y));
+                return true;
+            }
         }
     }
 
