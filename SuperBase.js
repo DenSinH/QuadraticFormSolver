@@ -114,6 +114,12 @@ class SuperBase {
             other_points.push(this.points[i]);
         }
 
+        // keep correct value on your left
+        if (m_i === 0) {
+            other_vals = other_vals.reverse();
+            other_points = other_points.reverse();
+        }
+
         // calculate the next value and the next coordinates of the new superbase
         let new_val = 2*(other_vals[0] + other_vals[1]) - m;
         let new_point = createVector(
@@ -132,6 +138,8 @@ class SuperBase {
         let textSize = baseTextSize / (this.dist + 1);
         let diff = createVector(this.pos.x - this.prev_pos.x, this.pos.y - this.prev_pos.y);
         diff.mult(decreaseVal / (this.dist + decreaseVal));
+
+        console.log(this.vals, m, new_val);
 
         let ang;
         switch (m_i) {
