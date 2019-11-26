@@ -1,43 +1,47 @@
-let start = false;
-let done = false;
 let a, h, b;
 let f;
 let n;
 
-// generate all (s), (d, d) combinations for a triple
-function* combinations(vals) {
-  for (i = 0; i < 3; i++) {
-    yield {
-      s: vals[i],
-      d: [vals[(i + 1) % 3], vals[(i + 2) % 3]]
-    }
-  }
-}
-
-// return the sorted array without changing the initial one
-function sorted(arr) {
-  return arr.concat().sort();
-}
-
-// rotate a vector
-function rotateVector(vec, ang)
-{
-  ang = -ang * (Math.PI/180);
-  var cos = Math.cos(ang);
-  var sin = Math.sin(ang);
-  return createVector(Math.round(10000*(vec.x * cos - vec.y * sin))/10000,
-      Math.round(10000*(vec.x * sin + vec.y * cos))/10000);
-}
-
 let startBase;
-let stage = "find start";
+let stage = "waiting";
 let found = new Set();
-let foundSuperBases = [];
+let foundLines = [];
+let foundVals = [];
 let to_explore_from = [];
+let well;
+
+let baseLength = 50;
+let baseTextSize = 12;
+
+function getDefaultVals() {
+  return [{
+    size: baseTextSize,
+    pos: createVector(-baseLength/3, -baseLength / 3),
+    val: startBase.vals[0]
+  },
+    {
+      size: baseTextSize,
+      pos: createVector(-baseLength/3, baseLength / 3),
+      val: startBase.vals[1]
+    },
+    {
+      size: baseTextSize,
+      pos: createVector(baseLength / 3, 0),
+      val: startBase.vals[2]
+    }]
+}
+
+function init(sB) {
+  found = new Set();
+  found.add(sorted(sB.vals).toString());
+  to_explore_from = [sB];
+  foundVals = getDefaultVals();
+  foundLines = [];
+  well = sB.oftype === "well";
+}
 
 // when pressing the start button, initialize everything
 function proceed() {
-  start = true;
   a = parseInt($("#a").val());
   b = parseInt($("#b").val());
   h = parseInt($("#h").val());
@@ -57,13 +61,7 @@ function proceed() {
   stage = (startBase.oftype === "normal") ? "find start" : "find solution";
   startBase.check();
 
-  found = new Set();
-  foundSuperBases = [];
-  to_explore_from = [startBase];
-
-  done = false;
-
-  console.log(a, h, b);
+  init(startBase);
 
 }
 
@@ -103,21 +101,41 @@ function draw() {
 
   // draw all previously found superbases
   stroke(0, 0, 0);
-  strokeWeight(2 / zoom);
 
-  for (let superBase of foundSuperBases) {
-    line(superBase.prev_pos.x, superBase.prev_pos.y, superBase.pos.x, superBase.pos.y)
+  for (let l of foundLines) {
+    switch (l.type) {
+      case "river":
+        strokeWeight(6 / zoom);
+        break;
+      case "lakeside":
+        strokeWeight(6 / zoom);
+        break;
+      default:
+        strokeWeight(2 / zoom);
+    }
+    line(l.x1, l.y1, l.x2, l.y2)
+  }
+
+  for (let t of foundVals) {
+    textSize(t.size);
+    text(t.val, t.pos.x, t.pos.y);
+  }
+
+  if (well) {
+    stroke(255, 0, 0);
+    strokeWeight(20 / zoom);
+    point(0, 0);
   }
 
   // if we are not looking for a starting position, and we are not done (yet), but we have nothing to do, finish
-  if (stage !== "find start" && !done && to_explore_from.length === 0) {
+  if (stage === "find solution" && to_explore_from.length === 0) {
     alert("NO SOLUTION FOUND");
     console.log("NO SOLUTION FOUND");
-    done = true;
+    stage = "done";
   }
 
-  // dont calculate anything until we have started
-  if (!start || done) {
+  // dont calculate anything until we have started or when we are done
+  if (stage === "waiting" || stage === "done") {
     return;
   }
 
@@ -128,22 +146,25 @@ function draw() {
     startBase.check();
     if (startBase.oftype !== "normal") {
       startBase.pos = createVector(0, 0);
-      startBase.prev_pos = createVector(-50, 0);
+      startBase.prev_pos = createVector(-baseLength, 0);
       startBase.dist = 0;
       stage = "find solution";
-      to_explore_from = [startBase];
-      foundSuperBases = [startBase];
+      init(startBase);
     }
     return;
   }
 
   // explore one superbase we havent yet
   let current = to_explore_from.pop();
-  let rot = 1;
+  let txt = "";
+  for (let _i = 0; _i < 3; _i++) {
+    txt += current.points[_i].x.toString() + "," + current.points[_i].y + " : " + current.vals[_i] + "<br/>"
+  }
+  $("#log").html(txt);
   for (let _i = 0; _i < 3; _i++) {
     tryadd = false;
     // next superbase and value
-    let superBaseData = current.move_away(current.vals[_i], current.points[_i], rot);
+    let superBaseData = current.move_away(current.vals[_i], current.points[_i]);
     let nxt = superBaseData.nxt;
     let new_val = superBaseData.new_val;
     let data = sorted(nxt.vals).toString();
@@ -170,18 +191,23 @@ function draw() {
     }
 
     // add new superbase if needed
-    if (tryadd) {
-      if (!found.has(data)) {
+    if (!found.has(data)) {
+      if (tryadd) {
         to_explore_from.push(nxt);
         found.add(data);
-        foundSuperBases.push(nxt);
-        rot++;
-
       }
+
+      foundLines.push({
+        x1: nxt.prev_pos.x,
+        x2: nxt.pos.x,
+        y1: nxt.prev_pos.y,
+        y2: nxt.pos.y,
+        type: nxt.oftype
+      });
+      foundVals.push(superBaseData.text);
+
     }
-
   }
-
 }
 
 
@@ -191,6 +217,8 @@ function keyPressed()
   if (key === 'r')
   {
     zoom = 1;
+    offset.x = 0;
+    offset.y = 0;
   }
 }
 

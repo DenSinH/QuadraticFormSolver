@@ -9,7 +9,6 @@ h = 6
 b = -5
 f = lambda x, y: a*x**2 + h*x*y + b*y**2
 
-
 def combinations(vals):
     for i in range(3):
         yield vals[i], (vals[(i + 1) % 3], vals[(i + 2) % 3])
@@ -65,10 +64,10 @@ class SuperBase(object):
             frac = max(n / v[0], v[0] / n, key=lambda x: abs(x))
             if frac < 0:
                 return False
-            if int(math.sqrt(frac))**2 * v[0] == n:
-                coords = math.sqrt(frac)*v[1] if n <= v[0] else v[1] / math.sqrt(frac)
-                print(f"{n} FOUND AT POINT {frac*v[1]}")  # todo: of / frac
-                print(f"f({coords}) == {f(*coords)}")
+            if int(math.sqrt(frac))**2 == frac:
+                coords = (math.sqrt(frac)*v[1] if n >= v[0] else v[1] / math.sqrt(frac)).astype(int)
+                print(f"{n} FOUND AT POINT {coords}")
+                print(f"{a}*({coords[0]})**2 + {h}*{coords[0]}*{coords[1]} + {b}({coords[1]})**2 == {f(*coords)}")
                 quit()
         return False
 
@@ -101,7 +100,7 @@ class SuperBase(object):
         return new_val, nxt
 
 
-n = 4 * 73  # int(input("n: "))
+n = int(input("n: "))
 
 start = SuperBase([
     (f(*point), np.array(point, dtype=int)) for point in ((1, 0), (0, 1), (1, 1))

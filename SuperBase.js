@@ -1,3 +1,5 @@
+let decreaseVal = 5;  // 5 gave no overlap
+
 class SuperBase {
     constructor(pos, prev_pos, dist, vals, points) {
         this.pos = pos;
@@ -55,7 +57,6 @@ class SuperBase {
 
     check() {
         // find if we have a solution
-        console.log(n + " FOUND");
         for (let i = 0; i < 3; i++) {
             let frac;
             let x, y;
@@ -68,13 +69,15 @@ class SuperBase {
                 x = this.points[i].x / Math.sqrt(frac);
                 y = this.points[i].y / Math.sqrt(frac);
             }
-            console.log(frac);
-            if (Math.round(Math.sqrt(frac))**2 == frac) {
-                done = true;
+            if (frac !== 0 && 1/frac !== 0 && Math.round(Math.sqrt(frac))**2 === frac) {
+                stage = "done";
                 alert("f(" + x.toString() + "," + y.toString() + ") = " + n);
-                console.log("f(" + x.toString() + "," + y.toString() + ") = " + n);
-                console.log(f(x,y));
-                return true;
+                console.log(n + " FOUND");
+                return;
+            } else if (n === 0) {
+                stage = "done";
+                alert("f(0, 0) = " + n);
+                return;
             }
         }
     }
@@ -92,17 +95,19 @@ class SuperBase {
         return m_i;
     }
 
-    move_away(m, p, rot=0) {
+    move_away(m, p) {
         // move away from the value and point specified as arguments, rot is argument to determine the next point in the
         // canvas
         let other_vals = [];
         let other_points = [];
         let m_found = false;
+        let m_i;
 
         // find the other 2 values and points
         for (let i = 0; i < 3; i++) {
             if (this.vals[i] === m && this.points[i] === p && !m_found) {
                 m_found = true;
+                m_i = i;
                 continue;
             }
             other_vals.push(this.vals[i]);
@@ -123,9 +128,29 @@ class SuperBase {
 
         // create a new superbase
         let newPos = createVector(this.pos.x, this.pos.y);
+        let textPos = createVector(this.pos.x, this.pos.y);
+        let textSize = baseTextSize / (this.dist + 1);
         let diff = createVector(this.pos.x - this.prev_pos.x, this.pos.y - this.prev_pos.y);
-        diff.mult(5 / (this.dist + 5));
-        newPos.add(rotateVector(diff, rot*120));
+        diff.mult(decreaseVal / (this.dist + decreaseVal));
+
+        let ang;
+        switch (m_i) {
+            case 0:
+                ang = -45 * (0.5 + 1/(1 + this.dist));
+                break;
+            case 1:
+                ang = 45 * (0.5 + 1/(1 + this.dist));
+                break;
+            default:
+                ang=180;
+        }
+        diff = rotateVector(diff, ang);
+        newPos.add(diff);
+
+        diff.mult(1.5);
+        textPos.add(diff);
+        textPos.sub(createVector(textSize / 2, 0));
+
 
         let nxt = new SuperBase(
             newPos,
@@ -139,7 +164,12 @@ class SuperBase {
         nxt.check();
         return {
             "new_val": new_val,
-            "nxt": nxt
+            "nxt": nxt,
+            "text": {
+                "val": new_val,
+                "pos": textPos,
+                "size": textSize
+            }
         }
 
     }
