@@ -69,11 +69,15 @@ class SuperBase {
                 x = this.points[i].x / Math.sqrt(frac);
                 y = this.points[i].y / Math.sqrt(frac);
             }
-            if (frac !== 0 && 1/frac !== 0 && Math.round(Math.sqrt(frac))**2 === frac) {
-                stage = "done";
-                alert("f(" + x.toString() + "," + y.toString() + ") = " + n);
-                console.log(n + " FOUND");
+            if (frac < 0) {
                 return;
+            } else if (frac !== 0 && 1/frac !== 0 && Math.round(Math.sqrt(frac))**2 === frac) {
+                if (Math.round(x) === x && Math.round(y) === y) {
+                    stage = "done";
+                    alert("f(" + x.toString() + "," + y.toString() + ") = " + n);
+                    console.log(n + " FOUND");
+                    return;
+                }
             } else if (n === 0) {
                 stage = "done";
                 alert("f(0, 0) = " + n);

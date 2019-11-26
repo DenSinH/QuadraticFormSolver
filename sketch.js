@@ -117,6 +117,7 @@ function draw() {
   }
 
   for (let t of foundVals) {
+    strokeWeight(0.5 / zoom);
     textSize(t.size);
     text(t.val, t.pos.x, t.pos.y);
   }

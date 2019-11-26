@@ -4,9 +4,9 @@ from warnings import warn
 import math
 
 
-a = 3
-h = 6
-b = -5
+a = 30
+h = 63
+b = -77
 f = lambda x, y: a*x**2 + h*x*y + b*y**2
 
 def combinations(vals):
@@ -61,14 +61,29 @@ class SuperBase(object):
 
     def check(self, n):
         for v in self.vals:
-            frac = max(n / v[0], v[0] / n, key=lambda x: abs(x))
-            if frac < 0:
-                return False
-            if int(math.sqrt(frac))**2 == frac:
-                coords = (math.sqrt(frac)*v[1] if n >= v[0] else v[1] / math.sqrt(frac)).astype(int)
-                print(f"{n} FOUND AT POINT {coords}")
-                print(f"{a}*({coords[0]})**2 + {h}*{coords[0]}*{coords[1]} + {b}({coords[1]})**2 == {f(*coords)}")
+            if n == 0:
+                print(f"{n} FOUND AT POINT (0, 0)")
                 quit()
+                x = y = frac = 0
+            elif n >= v[0]:
+                frac = n / v[0]
+                if frac < 0:
+                    return False
+                x = v[1][0] * math.sqrt(frac)
+                y = v[1][1] * math.sqrt(frac)
+            else:
+                frac = v[0] / n
+                if frac < 0:
+                    return False
+                x = v[1][0] / math.sqrt(frac)
+                y = v[1][1] / math.sqrt(frac)
+
+            if int(math.sqrt(frac))**2 == frac:
+                coords = (x, y)
+                if all(int(coords[i]) == coords[i] for i in (0, 1)):
+                    print(f"{n} FOUND AT POINT {coords}")
+                    print(f"{a}*({coords[0]})**2 + {h}*{coords[0]}*{coords[1]} + {b}({coords[1]})**2 == {f(*coords)}")
+                    quit()
         return False
 
     def max(self):
